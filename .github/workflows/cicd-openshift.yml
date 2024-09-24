@@ -1,9 +1,9 @@
 name: CI/CD for PROD Environment
 
 on:
-  pull_request:
+  push:
     branches:
-    - main
+    - feature/demo
 
 env:
   ENV: "prod"
@@ -54,18 +54,18 @@ jobs:
 #    - name: Update deployment file with Image name
 #      run:  TAG=$(echo $GITHUB_SHA | head -c7)-SNAPSHOT && sed -i 's|<IMAGE>|${{ env.CONTAINER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/racing-game-app:'${TAG}'|' $GITHUB_WORKSPACE/openshift/deploy-to-openshift.yaml
 
-  deploy-to-prod:
+  deploy-to-dev_openshift:
     runs-on: ubuntu-latest
     needs: [build-release]
     environment:
-      name: prod
+      name: dev_openshift
     steps:
     - uses: actions/checkout@v2
 
     - name: Docker Login
       run: docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ env.DOCKER_PASSWORD }} ${{ env.CONTAINER_REGISTRY }}
 
-    - name: Promote current release-image as prod
+    - name: Promote current release-image as dev_openshift
       run: |
         docker pull ${{ env.CONTAINER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/${{ env.APP_IMAGE_NAME }}:$(echo $GITHUB_SHA | head -c7)
         docker image tag ${{ env.CONTAINER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/${{ env.APP_IMAGE_NAME }}:$(echo $GITHUB_SHA | head -c7) \
